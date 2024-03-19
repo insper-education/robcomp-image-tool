@@ -134,10 +134,16 @@ class ImageTuner(QWidget):
         cv2.waitKey(1)
 
     def update_image(self):
+        is_rgb = self.rgb_button.isChecked()
         if self.img is None:
             return
-        low = np.array([self.sliders[i].value() for i in range(3)])[[2, 1, 0]]
-        high = np.array([self.sliders[i].value() for i in range(3, 6)])[[2, 1, 0]]
+        if is_rgb:
+            low = np.array([self.sliders[i].value() for i in range(3)])[[2, 1, 0]]
+            high = np.array([self.sliders[i].value() for i in range(3, 6)])[[2, 1, 0]]
+        else:
+            low = np.array([self.sliders[i].value() for i in range(3)])
+            high = np.array([self.sliders[i].value() for i in range(3, 6)])
+
         if self.rgb_button.isChecked():
             result = self.image_module.run(self.img, low, high)
         else:
