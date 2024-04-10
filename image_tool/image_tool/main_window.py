@@ -5,9 +5,10 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from cv_bridge import CvBridge
 from PyQt5.QtWidgets import QApplication, QSlider, QLabel, QVBoxLayout, QWidget, QPushButton, QRadioButton, QHBoxLayout, QFileDialog, QFrame, QCheckBox
 from image_tool.image_module import ImageModule
+from PyQt5.QtWidgets import QApplication
+
 
 class ImageUpdateSignal(QObject):
-    # Define a custom signal
     signal = pyqtSignal(np.ndarray)
 
 class ImageTuner(QWidget):
@@ -38,6 +39,8 @@ class ImageTuner(QWidget):
     def init_widgets(self):
         self.open_button = QPushButton('Open Image', self)
         self.open_button.clicked.connect(self.open_image)
+        self.copy_button = QPushButton('Copy Slider Values', self)
+        self.copy_button.clicked.connect(self.copy_slider_values)
 
         self.rgb_button, self.hsv_button = self.create_radio_buttons()
         self.sliders, self.slider_labels = self.create_sliders_and_labels()
@@ -71,6 +74,8 @@ class ImageTuner(QWidget):
 
         ui_layout = QVBoxLayout()
         ui_layout.addWidget(self.open_button)
+        ui_layout.addWidget(self.copy_button)  # Adicione esta linha após a criação dos sliders
+
         ui_layout.addLayout(self.create_radio_rossub_layout())
         ui_layout.addLayout(self.create_radio_buttons_layout())
         ui_layout.addLayout(self.create_sliders_layout())
@@ -128,10 +133,21 @@ class ImageTuner(QWidget):
             self.hsv_img = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
             self.show_image(self.img, "Original Image")
         self.update_ui()
-
+        
     def show_image(self, img, window_name):
         cv2.imshow(window_name, img)
         cv2.waitKey(1)
+
+    def copy_slider_values(self):
+        min_values = [self.sliders[i].value() for i in range(3)]
+        max_values = [self.sliders[i].value() for i in range(3, 6)]
+        min_values_str = ', '.join(map(str, min_values))
+        max_values_str = ', '.join(map(str, max_values))
+        formatted_values = f"lower = np.array([{min_values_str}])\n upper = np.array([{max_values_str}])"
+        clipboard = QApplication.clipboard()
+        clipboard.setText(formatted_values)
+        print("Copied to clipboard:", formatted_values)
+
 
     def update_image(self):
         is_rgb = self.rgb_button.isChecked()
